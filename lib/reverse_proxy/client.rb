@@ -38,12 +38,13 @@ module ReverseProxy
 
     def request(env, options = {}, &block)
       options.reverse_merge!(
-        headers:    {},
-        http:       {},
-        path:       nil,
-        username:   nil,
-        password:   nil,
-        verify_ssl: true
+        headers:        {},
+        ignore_headers: {},
+        http:           {},
+        path:           nil,
+        username:       nil,
+        password:       nil,
+        verify_ssl:     true
       )
 
       source_request = Rack::Request.new(env)
@@ -56,7 +57,8 @@ module ReverseProxy
 
       # Setup headers
       target_request_headers = extract_http_request_headers(source_request.env).merge(options[:headers])
-
+      target_request_headers = target_request_headers.except(*options[:ignore_headers])
+      
       target_request.initialize_http_header(target_request_headers)
 
       # Basic auth
